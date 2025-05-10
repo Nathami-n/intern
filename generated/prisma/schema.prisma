@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  email        String        @unique
+  password     String
+  role         String        @default("client")
+  createdAt    DateTime      @default(now())
+  payments     Payment[]
+  applications Application[]
+}
+
+model Internship {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String
+  company      String
+  createdBy    String        @db.ObjectId
+  createdAt    DateTime      @default(now())
+  payments     Payment[]
+  applications Application[]
+}
+
+model Application {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String     @db.ObjectId
+  internshipId String     @db.ObjectId
+  status       String     @default("pending")
+  appliedAt    DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id])
+  internship   Internship @relation(fields: [internshipId], references: [id])
+}
+
+model Payment {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String     @db.ObjectId
+  internshipId  String     @db.ObjectId
+  amount        Float
+  transactionId String
+  status        String     @default("pending")
+  createdAt     DateTime   @default(now())
+  user          User       @relation(fields: [userId], references: [id])
+  internship    Internship @relation(fields: [internshipId], references: [id])
+}
